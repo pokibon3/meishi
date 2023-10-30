@@ -1,3 +1,5 @@
+//  denshi meishi 
+//  Ver 1.0 2023.10.30 K.Ohe
 #include <FS.h>
 #include <SPIFFS.h>
 #include "M5Dial.h"
@@ -5,14 +7,7 @@
 #define MAX_FILES 100
 
 String fileName[MAX_FILES];
-/*
-const char *fileName[] = {
-    "/pocky.jpg",
-    "/namae.jpg",
-    "/QR_X.jpg",
-    "/QR_F.jpg"
-};
-*/
+
 unsigned long previousMillis = 0;   // 前回の時間保存用
 //uint16_t fileNum = sizeof(fileName) / sizeof(char*);
 uint16_t fileNum = 0;
