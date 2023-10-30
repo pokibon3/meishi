@@ -1,25 +1,56 @@
+#include <FS.h>
 #include <SPIFFS.h>
 #include "M5Dial.h"
 
+#define MAX_FILES 100
+
+String fileName[MAX_FILES];
+/*
 const char *fileName[] = {
     "/pocky.jpg",
     "/namae.jpg",
     "/QR_X.jpg",
     "/QR_F.jpg"
 };
+*/
 unsigned long previousMillis = 0;   // 前回の時間保存用
-uint16_t fileNum = sizeof(fileName) / sizeof(char*);
-int16_t fileSel = 0;
+//uint16_t fileNum = sizeof(fileName) / sizeof(char*);
+uint16_t fileNum = 0;
+int16_t fileSel  = 0;
 int32_t oldPosition = 0;
 enum  {
     MANUAL = 0,
     AUTO
 };
 uint16_t mode = AUTO;
+
+//===========================================================
+//	getFileNames() ： get File Name From SPIFFS
+//===========================================================
+int getFileNames()
+{
+    int count = 0;
+    File root = SPIFFS.open("/");
+    File fName = root.openNextFile();
+    while (fName) {
+        String file = fName.name();
+        if (file.endsWith(".jpg") || file.endsWith(".jpeg")) {
+            fileName[count] = "/" + file;
+            count++;
+        if (count >= MAX_FILES) break;
+        }
+        fName = root.openNextFile();
+    }
+    for (int i = 0; i < count; i++) {
+        Serial.println(fileName[i]);
+    }
+    return count;
+}
+
 //===========================================================
 //	drawFile() ： Draw jpg File to LCD
 //===========================================================
-bool drawFile(const char *filename)
+bool drawFile(String filename)
 {
   bool ret = false;
 	int	err_count = 0;
@@ -39,20 +70,26 @@ bool drawFile(const char *filename)
 	return ret;
 }
 
-
-// setup関数は起動時に一度だけ実行されます。
-// 主に初期化処理を記述します。
+//===========================================================
+//	setup() ： Arduino Setup
+//===========================================================
 void setup() {
-
+    Serial.begin(115200);
     auto cfg = M5.config();       // M5Stack初期設定用の構造体を代入
     M5Dial.begin(cfg, true, false);
     //M5.begin(cfg);                           // M5デバイスの初期化
     SPIFFS.begin();
+    fileNum = getFileNames();
+    if (fileNum == 0) {
+        Serial.println("jpeg file not found");
+        while(true);
+    }
     drawFile(fileName[0]);
 }
 
-// loop関数は起動している間ずっと繰り返し実行されます。
-// センサーから値を取得したり、画面を書き換える動作等をおこないます。
+//===========================================================
+//	loop() ： Arduino main loop
+//===========================================================
 void loop() 
 {
     unsigned long currentMillis = millis();
