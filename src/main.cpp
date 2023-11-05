@@ -5,7 +5,7 @@
 #include "M5Dial.h"
 
 #define MAX_FILES 100
-
+#define SHOW_TIME 5000
 String fileName[MAX_FILES];
 
 unsigned long previousMillis = 0;   // 前回の時間保存用
@@ -50,7 +50,7 @@ bool drawFile(String filename)
   bool ret = false;
 	int	err_count = 0;
 
-	delay(1000);
+//	delay(1000);
 	err_count = 0;
 
 	do {
@@ -116,7 +116,7 @@ void loop()
             drawFile(fileName[fileSel]);
         }
     } else {
-        if (currentMillis - previousMillis >= 10000) {
+        if (currentMillis - previousMillis >= SHOW_TIME) {
             fileSel = (fileSel >= fileNum - 1) ?  0 : fileSel + 1;
             drawFile(fileName[fileSel]);
             previousMillis = currentMillis;
