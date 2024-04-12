@@ -1,7 +1,8 @@
 //  denshi meishi 
 //  Ver 1.0 2023.10.30 K.Ohe
 #include <FS.h>
-#include <SPIFFS.h>
+//#include <SPIFFS.h>
+#include <LittleFS.h>
 #include "M5Dial.h"
 
 #define MAX_FILES 100
@@ -25,7 +26,8 @@ uint16_t mode = AUTO;
 int getFileNames()
 {
     int count = 0;
-    File root = SPIFFS.open("/");
+//    File root = SPIFFS.open("/");
+    File root = LittleFS.open("/");
     File fName = root.openNextFile();
     while (fName) {
         String file = fName.name();
@@ -55,7 +57,8 @@ bool drawFile(String filename)
 
 	do {
 //		ret = M5Dial.Display.drawJpgFile(SPIFFS, filename, 0, 0, 240, 240, 0, 0, JPEG_DIV_MAX);
-		ret = M5Dial.Display.drawJpgFile(SPIFFS, filename, 0, 0, 240, 240, 0, 0);
+//		ret = M5Dial.Display.drawJpgFile(SPIFFS, filename, 0, 0, 240, 240, 0, 0);
+		ret = M5Dial.Display.drawJpgFile(LittleFS, filename, 0, 0, 240, 240, 0, 0);
 		if (err_count++ > 10) {
     	    Serial.println("File not EXIST!");
 			break;
@@ -72,13 +75,16 @@ void setup() {
     Serial.begin(115200);
     auto cfg = M5.config();       // M5Stack初期設定用の構造体を代入
     M5Dial.begin(cfg, true, false);
+//    M5Dial.begin(cfg);
     //M5.begin(cfg);                           // M5デバイスの初期化
-    SPIFFS.begin();
+//    SPIFFS.begin();
+    LittleFS.begin();
     fileNum = getFileNames();
     if (fileNum == 0) {
         Serial.println("jpeg file not found");
         while(true);
     }
+    M5.Speaker.setVolume(255);
     drawFile(fileName[0]);
 }
 
@@ -113,11 +119,13 @@ void loop()
             }
             oldPosition = newPosition;
             //Serial.printf("pos = %04d\n", fileSel);
+            Serial.println(fileName[fileSel]);
             drawFile(fileName[fileSel]);
         }
     } else {
         if (currentMillis - previousMillis >= SHOW_TIME) {
             fileSel = (fileSel >= fileNum - 1) ?  0 : fileSel + 1;
+            Serial.println(fileName[fileSel]);
             drawFile(fileName[fileSel]);
             previousMillis = currentMillis;
         }
